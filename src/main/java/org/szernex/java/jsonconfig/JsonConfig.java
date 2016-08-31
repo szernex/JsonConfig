@@ -57,7 +57,7 @@ public class JsonConfig<ConfigObject> {
 
 				ConfigObject empty_config = configObjectClass.newInstance();
 
-				if (!save(null, path)) {
+				if (!save(empty_config, path)) {
 					System.err.println("Could not create empty config file");
 				}
 
