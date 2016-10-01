@@ -1,5 +1,5 @@
 group 'org.szernex.java'
-version '0.0.3'
+version '0.1.0b'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -12,6 +12,8 @@ repositories {
 
 dependencies {
     compile 'com.google.code.gson:gson:2.6.2'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.6.2'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.6.2'
 }
 
 publishing {

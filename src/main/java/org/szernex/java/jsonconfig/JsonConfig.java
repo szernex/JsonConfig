@@ -26,6 +26,8 @@ package org.szernex.java.jsonconfig;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -33,44 +35,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class JsonConfig<ConfigObject> {
-	private static JsonConfig instance;
-	private ConfigObject globalConfig = null;
+	private static final Logger logger = LogManager.getLogger(JsonConfig.class);
+
 	private final Class<ConfigObject> configObjectClass;
 
 	public JsonConfig(Class<ConfigObject> configObjectClass) {
-		instance = this;
 		this.configObjectClass = configObjectClass;
 	}
 
-	public static JsonConfig getInstance() {
-		return instance;
-	}
-
-	public ConfigObject getGlobalConfig() {
-		return globalConfig;
-	}
-
 	public ConfigObject load(Path path) {
-		try {
-			if (!Files.exists(path)) {
-				System.out.println("Creating new empty config file " + path.toString());
+		if (!Files.exists(path)) {
+			try {
+				logger.info("Creating new empty config file " + path.toString());
 
 				ConfigObject empty_config = configObjectClass.newInstance();
 
 				if (!save(empty_config, path)) {
-					System.err.println("Could not create empty config file");
+					logger.error("Could not save empty config file");
 				}
 
 				return empty_config;
+			} catch (InstantiationException | IllegalAccessException ex) {
+				logger.error("Error creating ConfigObject instance: " + ex.getMessage());
+				ex.printStackTrace();
 			}
-		}
-		catch (InstantiationException ex) {
-			System.err.println("Error creating ConfigObject instance: " + ex.getMessage());
-			ex.printStackTrace();
-		}
-		catch (IllegalAccessException ex) {
-			System.err.println("Illegal Access Exception: " + ex.getMessage());
-			ex.printStackTrace();
 		}
 
 		try {
@@ -80,8 +68,6 @@ public class JsonConfig<ConfigObject> {
 
 			Gson gson = new Gson();
 			ConfigObject config = gson.fromJson(raw.toString(), configObjectClass);
-
-			globalConfig = config;
 
 			System.out.println("JsonConfig file " + path.toString() + " loaded");
 
@@ -99,7 +85,7 @@ public class JsonConfig<ConfigObject> {
 			try {
 				Files.createFile(path);
 			} catch (IOException ex) {
-				System.err.println("Error creating config file " + path + ": " + ex.getMessage());
+				logger.error("Error creating config file " + path + ": " + ex.getMessage());
 				ex.printStackTrace();
 
 				return false;
@@ -115,7 +101,7 @@ public class JsonConfig<ConfigObject> {
 
 			return true;
 		} catch (IOException ex) {
-			System.err.println("Error writing config to file " + path + ": " + ex.getMessage());
+			logger.error("Error writing config to file " + path + ": " + ex.getMessage());
 			ex.printStackTrace();
 
 			return false;
